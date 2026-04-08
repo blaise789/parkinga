@@ -1,0 +1,28 @@
+---
+- name: Update apt cache
+  ansible.builtin.apt:
+    update_cache: yes
+    force_apt_get: yes
+    cache_valid_time: 3600
+
+- name: Install base utility packages
+  ansible.builtin.apt:
+    name:
+      - vim
+      - htop
+      - unzip
+      - build-essential
+      - fail2ban
+      - jq
+    state: present
+
+- name: Ensure unattended-upgrades is installed
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+
+- name: Start and enable fail2ban
+  ansible.builtin.service:
+    name: fail2ban
+    state: started
+    enabled: yes

@@ -1,0 +1,11 @@
+---
+- name: Configure EC2 Instance for Node.js Deployment
+  hosts: all
+  become: true
+  vars:
+    app_user: "{{ ansible_user | default('ubuntu') }}"
+    app_path: "/home/{{ ansible_user | default('ubuntu') }}/app"
+  roles:
+    - role: common
+    - role: docker
+    - role: app_setup

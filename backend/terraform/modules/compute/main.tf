@@ -31,7 +31,7 @@ resource "aws_instance" "app_server" {
 
   root_block_device {
     volume_size = 20
-    volume_type = "gp3"
+    volume_type = "gp2"
   }
 
   tags = { Name = "${var.project_name}-server" }

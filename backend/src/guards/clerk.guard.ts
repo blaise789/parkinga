@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
-export class AdminGuard implements CanActivate {
+export class ClerkGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private prisma: PrismaService,
@@ -30,5 +30,6 @@ export class AdminGuard implements CanActivate {
         return false;
       }
     }
+    return false;
   }
 }

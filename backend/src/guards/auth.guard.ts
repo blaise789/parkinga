@@ -4,7 +4,10 @@ import { PrismaService } from 'prisma/prisma.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService: JwtService, private prisma: PrismaService) { }
+  constructor(
+    private jwtService: JwtService,
+    private prisma: PrismaService,
+  ) {}
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization;
@@ -17,11 +20,12 @@ export class AuthGuard implements CanActivate {
         });
         if (!user) return false;
         request.user = decodedToken;
-        console.log(request.user)
+        console.log(request.user);
         return true;
       } catch (error) {
         return false;
       }
     }
+    return false;
   }
 }

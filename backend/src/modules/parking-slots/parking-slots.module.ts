@@ -4,6 +4,6 @@ import { ParkingSlotsController } from './parking-slots.controller';
 
 @Module({
   providers: [ParkingSlotsService],
-  controllers: [ParkingSlotsController]
+  controllers: [ParkingSlotsController],
 })
 export class ParkingSlotsModule {}

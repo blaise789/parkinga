@@ -208,7 +208,7 @@ export class ReservationsService {
 
   async findReservations(userId: string) {
     try {
-      const reservations =await  this.prisma.reservation.findMany({
+      const reservations = await this.prisma.reservation.findMany({
         where: { userId },
         include: {
           vehicle: { select: { plateNumber: true } },
@@ -216,13 +216,12 @@ export class ReservationsService {
         },
         orderBy: { createdAt: 'desc' },
       });
-      
 
       if (!reservations) {
         throw new BadRequestException("you don't have reservations");
       }
       return reservations;
-    } catch (error) {
+    } catch (error: any) {
       throw new HttpException('internal server error', error);
     }
   }
@@ -293,6 +292,7 @@ export class ReservationsService {
     });
 
     if (
+      !reservation ||
       slot.vehicleType !== reservation.vehicle.vehicleType ||
       slot.size !== reservation.vehicle.size
     ) {

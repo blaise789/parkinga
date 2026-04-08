@@ -1,7 +1,12 @@
-import appConfig from "src/config/app.config";
+import appConfig from 'src/config/app.config';
 
-export const initiateEmailVerification = ({ names, verificationCode }: { names: string, verificationCode: string }) => (
-
+export const initiateEmailVerification = ({
+  names,
+  verificationCode,
+}: {
+  names: string;
+  verificationCode: string;
+}) =>
   `
 
     <!DOCTYPE html>
@@ -62,6 +67,4 @@ export const initiateEmailVerification = ({ names, verificationCode }: { names: 
 </html>
 
     
-    `
-
-)
+    `;

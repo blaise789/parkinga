@@ -17,7 +17,7 @@ import { BulkCreateParkingSlotDto } from './dtos/builk-create-slots.dto';
 export class ParkingSlotsService {
   constructor(private prisma: PrismaService) {}
 
-  async   findAll(page: number, limit: number, searchKey?: string) {
+  async findAll(page: number, limit: number, searchKey?: string) {
     // Convert searchKey to uppercase for enum comparison
     const searchUpper = searchKey?.toUpperCase();
 
@@ -73,54 +73,58 @@ export class ParkingSlotsService {
   }
 
   // parking-lots/parking-slots.service.ts
-async bulkCreateSlots(bulkDto: BulkCreateParkingSlotDto): Promise<ParkingSlot[]> {
-  const { count, vehicleType, size, location, status } = bulkDto;
-  const generatedSlots: CreateParkingSlotDto[] = [];
+  async bulkCreateSlots(
+    bulkDto: BulkCreateParkingSlotDto,
+  ): Promise<ParkingSlot[]> {
+    const { count, vehicleType, size, location, status } = bulkDto;
+    const generatedSlots: CreateParkingSlotDto[] = [];
 
-  // Generate sequential slot numbers
-  const existingSlots = await this.prisma.parkingSlot.findMany({
-    select: { slotNumber: true },
-    orderBy: { slotNumber: 'desc' },
-    take: 1
-  });
-
-  const lastNumber = existingSlots[0]?.slotNumber 
-    ? parseInt(existingSlots[0].slotNumber.replace('S', '')) 
-    : 0;
-
-  for (let i = 1; i <= count; i++) {
-    const slotNumber = `S${(lastNumber + i).toString().padStart(3, '0')}`;
-    generatedSlots.push({
-      slotNumber,
-      vehicleType,
-      size,
-      location,
-      status
+    // Generate sequential slot numbers
+    const existingSlots = await this.prisma.parkingSlot.findMany({
+      select: { slotNumber: true },
+      orderBy: { slotNumber: 'desc' },
+      take: 1,
     });
+
+    const lastNumber = existingSlots[0]?.slotNumber
+      ? parseInt(existingSlots[0].slotNumber.replace('S', ''))
+      : 0;
+
+    for (let i = 1; i <= count; i++) {
+      const slotNumber = `S${(lastNumber + i).toString().padStart(3, '0')}`;
+      generatedSlots.push({
+        slotNumber,
+        vehicleType,
+        size,
+        location,
+        status: status ?? SlotStatus.AVAILABLE,
+      });
+    }
+
+    try {
+      await this.prisma.parkingSlot.createMany({
+        data: generatedSlots,
+        skipDuplicates: true,
+      });
+
+      return this.prisma.parkingSlot.findMany({
+        where: {
+          slotNumber: {
+            in: generatedSlots.map((slot) => slot.slotNumber),
+          },
+        },
+      });
+    } catch (error: any) {
+      throw new HttpException(
+        `Failed to bulk create slots: ${error.message}`,
+        500,
+      );
+    }
   }
-
-  try {
-    await this.prisma.parkingSlot.createMany({
-      data: generatedSlots,
-      skipDuplicates: true
-    });
-
-    return this.prisma.parkingSlot.findMany({
-      where: {
-        slotNumber: {
-          in: generatedSlots.map(slot => slot.slotNumber)
-        }
-      }
-    });
-  } catch (error) {
-    throw new HttpException(
-      `Failed to bulk create slots: ${error.message}`,
-      500
-    );
-  }
-}
-// generating random slots
-  private getRandomEnumValue<T>(enumObj: T): T[keyof T] {
+  // generating random slots
+  private getRandomEnumValue<T extends Record<string, any>>(
+    enumObj: T,
+  ): T[keyof T] {
     const enumValues = Object.values(enumObj);
     const randomIndex = Math.floor(Math.random() * enumValues.length);
     return enumValues[randomIndex] as T[keyof T];
@@ -142,7 +146,7 @@ async bulkCreateSlots(bulkDto: BulkCreateParkingSlotDto): Promise<ParkingSlot[]>
       });
 
       return updatedSlot;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Update error:', error);
       throw new HttpException(
         `Failed to update parking slot: ${error.message}`,
@@ -167,7 +171,7 @@ async bulkCreateSlots(bulkDto: BulkCreateParkingSlotDto): Promise<ParkingSlot[]>
       });
 
       return deletedSlot;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Delete error:', error);
       throw new HttpException(
         `Failed to delete parking slot: ${error.message}`,
@@ -178,24 +182,21 @@ async bulkCreateSlots(bulkDto: BulkCreateParkingSlotDto): Promise<ParkingSlot[]>
 
   // Implemented createParkingSlot method
   async createParkingSlot(dto: CreateParkingSlotDto) {
-    
-      console.log(dto)
-      // Check if slot number already exists
-      const existingSlot = await this.prisma.parkingSlot.findFirst({
-        where: { slotNumber: dto.slotNumber },
-      });
+    console.log(dto);
+    // Check if slot number already exists
+    const existingSlot = await this.prisma.parkingSlot.findFirst({
+      where: { slotNumber: dto.slotNumber },
+    });
 
-      if (existingSlot) {
-        throw new  HttpException('Slot number already exists', 400);
-      }
+    if (existingSlot) {
+      throw new HttpException('Slot number already exists', 400);
+    }
 
-      const createdSlot = await this.prisma.parkingSlot.create({
-        data: dto,
-      });
+    const createdSlot = await this.prisma.parkingSlot.create({
+      data: dto,
+    });
 
-      return createdSlot;
-    
-      
+    return createdSlot;
   }
 
   // Implemented findById method
@@ -210,7 +211,7 @@ async bulkCreateSlots(bulkDto: BulkCreateParkingSlotDto): Promise<ParkingSlot[]>
       }
 
       return slot;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Find by ID error:', error);
       throw new HttpException(
         `Failed to find parking slot: ${error.message}`,

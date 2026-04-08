@@ -1,6 +1,11 @@
 // parking-lots/dto/bulk-create-parking-slot.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { ParkingLocation, SlotStatus, VehicleSize, VehicleType } from '@prisma/client';
+import {
+  ParkingLocation,
+  SlotStatus,
+  VehicleSize,
+  VehicleType,
+} from '@prisma/client';
 import { IsEnum, IsInt, IsOptional, Min, Max } from 'class-validator';
 
 export class BulkCreateParkingSlotDto {
@@ -8,7 +13,7 @@ export class BulkCreateParkingSlotDto {
     description: 'Number of slots to create',
     example: 10,
     minimum: 1,
-    maximum: 100
+    maximum: 100,
   })
   @IsInt()
   @Min(1)
@@ -18,7 +23,7 @@ export class BulkCreateParkingSlotDto {
   @ApiProperty({
     description: 'Type of vehicle for all slots',
     enum: VehicleType,
-    example: VehicleType.CAR
+    example: VehicleType.CAR,
   })
   @IsEnum(VehicleType)
   vehicleType: VehicleType;
@@ -26,7 +31,7 @@ export class BulkCreateParkingSlotDto {
   @ApiProperty({
     description: 'Size for all slots',
     enum: VehicleSize,
-    example: VehicleSize.MEDIUM
+    example: VehicleSize.MEDIUM,
   })
   @IsEnum(VehicleSize)
   size: VehicleSize;
@@ -34,7 +39,7 @@ export class BulkCreateParkingSlotDto {
   @ApiProperty({
     description: 'Location for all slots',
     enum: ParkingLocation,
-    example: ParkingLocation.NORTH
+    example: ParkingLocation.NORTH,
   })
   @IsEnum(ParkingLocation)
   location: ParkingLocation;
@@ -43,7 +48,7 @@ export class BulkCreateParkingSlotDto {
     description: 'Initial status for all slots',
     enum: SlotStatus,
     example: SlotStatus.AVAILABLE,
-    required: false
+    required: false,
   })
   @IsEnum(SlotStatus)
   @IsOptional()

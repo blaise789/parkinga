@@ -1,18 +1,18 @@
 export const reservationApprovalTemplate = ({
-    slotNumber,
-    plateNumber,
-    vehicleType,
-    vehicleSize,
-    location,
-    expirationDate
-  }: {
-    slotNumber: string;
-    plateNumber: string;
-    vehicleType: string;
-    vehicleSize: string;
-    location: string;
-    expirationDate: Date | null;
-  }) => `
+  slotNumber,
+  plateNumber,
+  vehicleType,
+  vehicleSize,
+  location,
+  expirationDate,
+}: {
+  slotNumber: string;
+  plateNumber: string;
+  vehicleType: string;
+  vehicleSize: string;
+  location: string;
+  expirationDate: Date | null;
+}) => `
   <!DOCTYPE html>
   <html>
   <head>
@@ -65,9 +65,13 @@ export const reservationApprovalTemplate = ({
               <p><strong>Vehicle Type:</strong> ${vehicleType}</p>
               <p><strong>Vehicle Size:</strong> ${vehicleSize}</p>
               <p><strong>Location:</strong> ${location}</p>
-              ${expirationDate ? `
+              ${
+                expirationDate
+                  ? `
               <p><strong>Expires At:</strong> ${expirationDate.toLocaleString()}</p>
-              ` : ''}
+              `
+                  : ''
+              }
           </div>
   
           <p>Please present this confirmation when you arrive at the parking facility.</p>

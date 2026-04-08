@@ -1,16 +1,16 @@
 export const reservationRejectionTemplate = ({
-    plateNumber,
-    vehicleType,
-    vehicleSize,
-    location,
-    reason
-  }: {
-    plateNumber: string;
-    vehicleType: string;
-    vehicleSize: string;
-    location?: string;
-    reason: string;
-  }) => `
+  plateNumber,
+  vehicleType,
+  vehicleSize,
+  location,
+  reason,
+}: {
+  plateNumber: string;
+  vehicleType: string;
+  vehicleSize: string;
+  location?: string;
+  reason: string;
+}) => `
   <!DOCTYPE html>
   <html>
   <head>

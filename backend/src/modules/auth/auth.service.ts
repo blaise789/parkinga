@@ -30,7 +30,7 @@ export class AuthService {
     //    user Exists
     try {
       const user = await this.userExists(dto.email);
-      console.log(user)
+      console.log(user);
       if (!user) {
         throw new HttpException('invalid email address', 400);
       }
@@ -70,27 +70,28 @@ export class AuthService {
           passwordResetCode: dto.resetToken,
         },
       });
-      if(!user) throw new HttpException("invalid reset code",400)
-        // check expiration  
-      if(user.passwordResetExpires< new Date()) throw new HttpException("invalid password reset token",400)
-      const hashedPassword=await hash(dto.password,10);
-     const updatedUser=await this.prisma.user.update({
-        where:{
-           id:user.id
+      if (!user) throw new HttpException('invalid reset code', 400);
+      // check expiration
+      if (!user.passwordResetExpires || user.passwordResetExpires < new Date())
+        throw new HttpException('invalid password reset token', 400);
+      const hashedPassword = await hash(dto.password, 10);
+      const updatedUser = await this.prisma.user.update({
+        where: {
+          id: user.id,
         },
-        data:{
-          password:hashedPassword,
-          passwordResetCode:null,
-          passwordResetExpires:null,
-          passwordResetStatus:"IDLE"
-        }
-     })
-     await this.mailService.sendPasswordResetSuccessfulEmail({email:updatedUser.email,names:updatedUser.firstName})
-    
-      
+        data: {
+          password: hashedPassword,
+          passwordResetCode: null,
+          passwordResetExpires: null,
+          passwordResetStatus: 'IDLE',
+        },
+      });
+      await this.mailService.sendPasswordResetSuccessfulEmail({
+        email: updatedUser.email,
+        names: updatedUser.firstName,
+      });
     } catch (err) {
       throw err;
     }
   }
-  
 }

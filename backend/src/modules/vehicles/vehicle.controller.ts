@@ -28,7 +28,7 @@ export class VehicleController {
     @Body() createVehicleDto: CreateVehicleDto,
   ) {
     console.log(req.user.id);
-    console.log(createVehicleDto)
+    console.log(createVehicleDto);
     return this.vehicleService.createVehicle(req.user.id, createVehicleDto);
   }
   //

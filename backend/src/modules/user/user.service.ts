@@ -93,7 +93,7 @@ export class UserService {
   }
   async removeProfilePicture(userId: string) {
     const user = await this.findById(userId);
-    if (!user.profilePicture) return false;
+    if (!user || !user.profilePicture) return false;
     await this.fileService.deleteFile(
       user.profilePicture.id,
       `${this.configService.get('PROFILE_FILES_PATH')}/${user.profilePicture.name}`,
@@ -134,7 +134,7 @@ export class UserService {
     // condition for filtering
     const condition = status ? { verificationStatus: status } : {};
     const [users, total] = await this.prisma.$transaction([
-       this.prisma.user.findMany({
+      this.prisma.user.findMany({
         where: condition,
         take: Number(limit),
         skip: page * limit,
@@ -142,7 +142,7 @@ export class UserService {
           createdAt: 'desc',
         },
       }),
-       this.prisma.user.count({
+      this.prisma.user.count({
         where: condition,
       }),
     ]);

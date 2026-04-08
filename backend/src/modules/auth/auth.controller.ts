@@ -13,7 +13,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import ServerResponse from 'src/utils/ServerResponse';
 import { ResetPasswordDTO } from './dto/password-reset.dto';
-import {  InitiatePasswordResetDTO } from './dto/initiate-pass-reset.dto';
+import { InitiatePasswordResetDTO } from './dto/initiate-pass-reset.dto';
 import appConfig from 'src/config/app.config';
 
 @Controller('auth')
@@ -30,7 +30,7 @@ export class AuthController {
 
   @Patch('initiate-reset-password')
   async initiateResetPassword(@Body() dto: InitiatePasswordResetDTO) {
-console.log(appConfig().client.url)
+    console.log(appConfig().client.url);
 
     await this.authService.initiatePasswordReset(dto);
     return ServerResponse.success(

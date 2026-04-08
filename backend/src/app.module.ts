@@ -4,7 +4,6 @@ import { FileModule } from './modules/file/file.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { UserModule } from './modules/user/user.module';
 
-
 import { PrismaModule } from '../prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
@@ -15,24 +14,32 @@ import appConfig from './config/app.config';
 import { ReservationsModule } from './modules/reservations/reservations.module';
 import { ParkingSlotsModule } from './modules/parking-slots/parking-slots.module';
 import { ParkingSessionModule } from './modules/parking-session/parking-session.module';
-import { ParkingSessionController } from './services/parking-session/parking-session.controller';
+import { ParkingSessionController } from './modules/parking-session/parking-session.controller';
 
 @Module({
-  imports: [ConfigModule.forRoot({
-    isGlobal:true,
-    envFilePath:'.env',
-  }),
-  JwtModule.register(
-{
-global:true,
-secret:appConfig().jwt.secret,
-signOptions:{expiresIn:appConfig().jwt.expiresIn}
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    JwtModule.register({
+      global: true,
+      secret: appConfig().jwt.secret,
+      signOptions: { expiresIn: appConfig().jwt.expiresIn as any },
+    }),
 
-}
-  )
-  ,
-  
-  AuthModule, FileModule, AdminModule, UserModule , MailModule,PrismaModule, ParkingSlotsModule, ReservationsModule, VehiclesModule, TicketsModule, ParkingSessionModule],
+    AuthModule,
+    FileModule,
+    AdminModule,
+    UserModule,
+    MailModule,
+    PrismaModule,
+    ParkingSlotsModule,
+    ReservationsModule,
+    VehiclesModule,
+    TicketsModule,
+    ParkingSessionModule,
+  ],
 
   controllers: [ParkingSessionController],
   providers: [],

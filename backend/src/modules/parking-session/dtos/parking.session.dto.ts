@@ -1,5 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ParkingSlot, PaymentMethod, PaymentStatus, User } from '@prisma/client';
+import {
+  ParkingSlot,
+  PaymentMethod,
+  PaymentStatus,
+  User,
+} from '@prisma/client';
 
 export class CreateSessionDto {
   @ApiProperty({ description: 'Vehicle plate number', example: 'ABC123' })
@@ -36,7 +41,11 @@ export class SessionResponseDto {
     number: string;
   };
 
-  @ApiProperty({ description: 'Payment information', type: Object, required: false })
+  @ApiProperty({
+    description: 'Payment information',
+    type: Object,
+    required: false,
+  })
   payment?: {
     amount: number;
     method: PaymentMethod;

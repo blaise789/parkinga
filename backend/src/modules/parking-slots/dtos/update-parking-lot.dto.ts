@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { ParkingLocation, SlotStatus, VehicleSize, VehicleType } from '@prisma/client';
+import {
+  ParkingLocation,
+  SlotStatus,
+  VehicleSize,
+  VehicleType,
+} from '@prisma/client';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class UpdateParkingSlotDto {

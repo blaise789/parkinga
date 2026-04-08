@@ -1,5 +1,5 @@
-export const emailVerified = ({ names }: { names: string }) => (
-    `
+export const emailVerified = ({ names }: { names: string }) =>
+  `
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,5 +46,4 @@ export const emailVerified = ({ names }: { names: string }) => (
 </html>
 
 
-`
-)
+`;

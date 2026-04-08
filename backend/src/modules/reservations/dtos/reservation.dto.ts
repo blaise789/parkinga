@@ -7,13 +7,11 @@ export class CreateReservationDto {
   @ApiProperty({ description: 'ID of the vehicle', example: 1 })
   @IsInt()
   vehicleId: number;
-
-
 }
 export class UpdateReservationStatusDto {
   @ApiProperty({
     enum: ReservationStatus,
-    description: 'New status for the reservation'
+    description: 'New status for the reservation',
   })
   @IsEnum(ReservationStatus)
   status: ReservationStatus;

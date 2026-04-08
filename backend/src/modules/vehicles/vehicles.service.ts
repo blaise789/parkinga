@@ -10,7 +10,6 @@ export class VehiclesService {
 
   async createVehicle(userId: string, createVehicleDto: CreateVehicleDto) {
     try {
-      
       const vehicleExists = await this.prisma.vehicle.findUnique({
         where: {
           plateNumber: createVehicleDto.plateNumber,

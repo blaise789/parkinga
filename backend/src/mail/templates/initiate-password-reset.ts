@@ -1,12 +1,13 @@
-            
-import { config } from "dotenv"
-import appConfig from "src/config/app.config"
+import { config } from 'dotenv';
+import appConfig from 'src/config/app.config';
 
-
-
-export const initiatePasswordReset = ({ token, names }: { token: string, names: string }) => 
-  (
-
+export const initiatePasswordReset = ({
+  token,
+  names,
+}: {
+  token: string;
+  names: string;
+}) =>
   `
     <!DOCTYPE html>
 <html>
@@ -61,11 +62,10 @@ export const initiatePasswordReset = ({ token, names }: { token: string, names: 
     <p>Hello, ${names}!</p>
     <p>We received a request to reset your password. Click the link below to reset it:</p>
     <div class="reset-link">
-      <a href="${appConfig().client.url + "/auth/forgot-password/" + token}">Reset Password</a>
+      <a href="${appConfig().client.url + '/auth/forgot-password/' + token}">Reset Password</a>
     </div>
   </div>
 </body>
 </html>
 
-    `
-)
+    `;

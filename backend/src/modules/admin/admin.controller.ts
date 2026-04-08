@@ -10,24 +10,17 @@ import { CreateUserDTO } from '../user/dto/create-user.dto';
 @ApiBearerAuth()
 @UseGuards(AdminGuard)
 export class AdminController {
+  constructor(private adminService: AdminService) {}
 
-    constructor(
-        private adminService: AdminService
-    ) { }
+  @Get('stats')
+  async stats() {
+    const stats = await this.adminService.getStats();
+    return ServerResponse.success('Stats fetched successfully', { ...stats });
+  }
 
-    @Get("stats")
-    async stats() {
-        const stats = await this.adminService.getStats();
-        return ServerResponse.success("Stats fetched successfully", { ...stats });
-    }
-
-    @Post("create")
-    async create(
-        dto: CreateUserDTO
-    ) {
-        const admin = await this.adminService.createAdmin(dto);
-        return ServerResponse.success("Admin created successfully", { ...admin });
-    }
-
+  @Post('create')
+  async create(dto: CreateUserDTO) {
+    const admin = await this.adminService.createAdmin(dto);
+    return ServerResponse.success('Admin created successfully', { ...admin });
+  }
 }
-

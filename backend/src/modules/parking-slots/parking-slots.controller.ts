@@ -64,7 +64,7 @@ export class ParkingSlotsController {
       limit,
       searchKey,
     );
-    
+
     return ServerResponse.success('Parking slots fetched successfully', {
       ...users,
     });

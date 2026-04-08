@@ -1,6 +1,11 @@
 // parking-lots/dto/create-parking-lot.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
-import { ParkingLocation, SlotStatus, VehicleSize, VehicleType } from '@prisma/client';
+import {
+  ParkingLocation,
+  SlotStatus,
+  VehicleSize,
+  VehicleType,
+} from '@prisma/client';
 import { IsEnum, IsString } from 'class-validator';
 
 export class CreateParkingSlotDto {
@@ -17,7 +22,7 @@ export class CreateParkingSlotDto {
     enum: VehicleSize,
     example: VehicleSize.MEDIUM,
     required: true,
-  })  
+  })
   @IsEnum(VehicleSize)
   size: VehicleSize;
 
@@ -39,7 +44,11 @@ export class CreateParkingSlotDto {
   @IsEnum(ParkingLocation)
   location: ParkingLocation;
   @IsEnum(SlotStatus)
-  @ApiProperty()
-  status:SlotStatus
-  
+  @ApiProperty({
+    description: 'Status of the parking slot',
+    enum: SlotStatus,
+    example: SlotStatus.AVAILABLE,
+    required: true,
+  })
+  status: SlotStatus;
 }

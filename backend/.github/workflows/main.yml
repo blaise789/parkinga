@@ -3,6 +3,9 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/main.yml'
   workflow_dispatch:
 
 jobs:
@@ -21,9 +24,11 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: backend
 
       - name: Build application
         run: npm run build
+        working-directory: backend
 
   infrastructure:
     name: Provision Infrastructure
@@ -45,7 +50,7 @@ jobs:
 
       - name: Terraform Init
         run: |
-          cd terraform
+          cd backend/terraform
           terraform init \
             -backend-config="bucket=${{ secrets.TF_STATE_BUCKET }}" \
             -backend-config="key=prod/terraform.tfstate" \
@@ -53,11 +58,11 @@ jobs:
             -backend-config="dynamodb_table=${{ secrets.TF_STATE_TABLE }}"
 
       - name: Terraform Apply
-        run: cd terraform && terraform apply -auto-approve
+        run: cd backend/terraform && terraform apply -auto-approve
 
       - name: Get EC2 IP
         id: ip
-        run: echo "EC2_IP=$(cd terraform && terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
+        run: echo "EC2_IP=$(cd backend/terraform && terraform output -raw instance_public_ip)" >> $GITHUB_OUTPUT
 
     outputs:
       ec2_ip: ${{ steps.ip.outputs.EC2_IP }}
@@ -76,7 +81,7 @@ jobs:
           sudo apt-get install -y ansible
 
       - name: Install Ansible community collection
-        run: ansible-galaxy install -r ansible/requirements.yml
+        run: ansible-galaxy install -r backend/ansible/requirements.yml
 
       - name: Setup SSH key
         run: |
@@ -87,7 +92,7 @@ jobs:
 
       - name: Run Ansible playbook
         run: |
-          ansible-playbook ansible/playbook.yml \
+          ansible-playbook backend/ansible/playbook.yml \
             -i "${{ needs.infrastructure.outputs.ec2_ip }}," \
             -u ${{ secrets.EC2_USERNAME }} \
             --private-key ~/.ssh/deploy_key \
@@ -121,6 +126,9 @@ jobs:
               git fetch origin main && git reset --hard origin/main
             fi
 
+            # Move into backend folder
+            cd backend
+
             # Create .env file
             echo "$ENV_FILE" > .env
 
@@ -140,7 +148,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /home/${{ secrets.EC2_USERNAME }}/app
+            cd /home/${{ secrets.EC2_USERNAME }}/app/backend
             echo "=== Docker Compose Status ==="
             docker compose ps
             echo ""

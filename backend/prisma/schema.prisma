@@ -4,8 +4,8 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
+
 enum PasswordResetStatus {
   PENDING
   IDLE
@@ -20,6 +20,7 @@ enum VerificationStatus {
 
   @@map("verification_status")
 }
+
 enum Role {
   ADMIN
   DRIVER
@@ -84,8 +85,8 @@ model User {
   passwordResetStatus  PasswordResetStatus @default(IDLE) @map("password_reset_status")
   passwordResetCode    String?             @map("password_reset_code")
   passwordResetExpires DateTime?           @map("password_reset_expires")
- 
-  companyId            String?
+
+  companyId String?
 
   reservations Reservation[]
   logs         Log[]
@@ -96,7 +97,7 @@ model User {
 }
 
 model Vehicle {
-  id           Int        @id @default(autoincrement())
+  id           Int           @id @default(autoincrement())
   userId       String        @map("user_id")
   plateNumber  String        @unique @map("plate_number")
   vehicleType  VehicleType   @map("vehicle_type")
@@ -127,7 +128,7 @@ model ParkingSlot {
 model Reservation {
   id          String            @id @default(uuid())
   userId      String            @map("user_id")
-  vehicleId   Int         @map("vehicle_id")
+  vehicleId   Int               @map("vehicle_id")
   slotId      String?           @map("slot_id")
   slotNumber  String?           @map("slot_number")
   status      ReservationStatus @default(PENDING)
@@ -136,7 +137,7 @@ model Reservation {
   parkingSlot ParkingSlot?      @relation(fields: [slotId], references: [id])
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
-  expiration DateTime?
+  expiration  DateTime?
 
   @@map("reservations")
 }
@@ -165,15 +166,14 @@ model File {
 
   @@map("files")
 }
+
 enum PaymentStatus {
   PAID
   PENDING
-
 }
 
 enum PaymentMethod {
   CARD
   CASH
   MOBILE
-  
 }

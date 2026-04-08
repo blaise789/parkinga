@@ -1,7 +1,5 @@
-
-export const passwordResetSuccessful = ({ names }: { names: string }) => (
-
-    `
+export const passwordResetSuccessful = ({ names }: { names: string }) =>
+  `
 
     <!DOCTYPE html>
 <html>
@@ -48,5 +46,4 @@ export const passwordResetSuccessful = ({ names }: { names: string }) => (
 </html>
 
 
-    `
-)
+    `;

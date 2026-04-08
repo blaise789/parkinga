@@ -1,5 +1,5 @@
-export enum UserStatus{
-    VERIFIED,
-    PENDING,
-    UNVERIFIED
+export enum UserStatus {
+  VERIFIED,
+  PENDING,
+  UNVERIFIED,
 }

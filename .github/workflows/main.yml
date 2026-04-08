@@ -53,14 +53,6 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Debug Variables
-        run: |
-          echo "=== DEPLOYMENT DEBUG INFO ==="
-          echo "Project Name: ${{ vars.PROJECT_NAME }}"
-          echo "AWS Region: ${{ vars.AWS_REGION }}"
-          echo "Instance Type: ${{ vars.INSTANCE_TYPE }}"
-          echo "============================="
-
       - name: Terraform Init
         run: |
           cd backend/terraform

@@ -21,9 +21,14 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
+        working-directory: backend
+
+      - name: Generate Prisma client
+        run: npx prisma generate
         working-directory: backend
 
       - name: Build application
@@ -81,7 +86,10 @@ jobs:
           sudo apt-get install -y ansible
 
       - name: Install Ansible community collection
-        run: ansible-galaxy install -r backend/ansible/requirements.yml
+        run: ansible-galaxy collection install -r backend/ansible/requirements.yml
+
+      - name: Wait for EC2 to be ready
+        run: sleep 30
 
       - name: Setup SSH key
         run: |

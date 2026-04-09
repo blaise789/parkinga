@@ -34,26 +34,73 @@ export class ReservationsService {
       throw new ForbiddenException('Vehicle does not belong to you');
   }
 
-  private async checkExistingReservation(vehicleId: number) {
+  private async checkExistingReservation(vehicleId: number, startTime: Date, endTime: Date) {
     const existing = await this.prisma.reservation.findFirst({
       where: {
         vehicleId,
         status: { in: ['PENDING', 'APPROVED'] },
+        OR: [
+          {
+            startTime: { lt: endTime },
+            endTime: { gt: startTime }
+          }
+        ]
       },
     });
     if (existing)
       throw new ConflictException(
-        `Active reservation exists (status: ${existing.status})`,
+        `Active reservation exists for this vehicle during this time (status: ${existing.status})`,
       );
   }
 
-  async create(userId: string, { vehicleId }: CreateReservationDto) {
+  async create(userId: string, dto: CreateReservationDto) {
+    const { vehicleId, slotId, startTime: start, endTime: end, notes } = dto;
+    const startTime = new Date(start);
+    const endTime = new Date(end);
+
+    if (startTime >= endTime) {
+      throw new BadRequestException('startTime must be before endTime');
+    }
+
     await this.validateVehicleOwnership(userId, vehicleId);
-    await this.checkExistingReservation(vehicleId);
+    await this.checkExistingReservation(vehicleId, startTime, endTime);
+
+    // Check if slot exists
+    const slot = await this.prisma.parkingSlot.findUnique({ where: { id: slotId } });
+    if (!slot) throw new NotFoundException('Slot not found');
+
+    // Prevent slot double booking
+    const overlap = await this.prisma.reservation.findFirst({
+      where: {
+        slotId: slotId,
+        status: { in: ['PENDING', 'APPROVED'] },
+        OR: [
+          {
+            startTime: { lt: endTime },
+            endTime: { gt: startTime }
+          }
+        ]
+      }
+    });
+
+    if (overlap) {
+      throw new ConflictException('Slot is already reserved for this time period');
+    }
+
+    const expiration = new Date(startTime.getTime() + 30 * 60000); // 30 minutes expiration buffer
 
     return this.prisma.reservation.create({
-      data: { status: 'PENDING', vehicleId, userId },
-      include: { vehicle: true, user: true },
+      data: { 
+        status: 'PENDING', 
+        userId, 
+        vehicleId, 
+        slotId,
+        startTime,
+        endTime,
+        expiration,
+        notes
+      },
+      include: { vehicle: true, user: true, parkingSlot: true },
     });
   }
 
@@ -117,7 +164,7 @@ export class ReservationsService {
   async approveReservation(id: string) {
     const reservation = await this.prisma.reservation.findUnique({
       where: { id },
-      include: { vehicle: true, user: true },
+      include: { vehicle: true, user: true, parkingSlot: true },
     });
 
     if (!reservation) {
@@ -130,32 +177,20 @@ export class ReservationsService {
       );
     }
 
-    const assignedSlot = await this.assignSlotAutomatically(
-      reservation.vehicle.vehicleType,
-      reservation.vehicle.size,
-    );
-
-    if (!assignedSlot) {
-      throw new BadRequestException(
-        'No available slot matches vehicle requirements',
-      );
-    }
-
     // Send approval email
     await this.mailService.sendReservationApproval(
       reservation.user.email,
-      assignedSlot.slotNumber,
+      reservation.parkingSlot.slotNumber,
       reservation.vehicle,
-      assignedSlot.location,
+      reservation.parkingSlot.location,
     );
 
     return this.prisma.reservation.update({
       where: { id },
       data: {
-        slotId: assignedSlot.id,
-        status: 'APPROVED',
-        expiration: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours from now
+        status: 'APPROVED'
       },
+      include: { parkingSlot: true }
     });
   }
 
@@ -226,27 +261,7 @@ export class ReservationsService {
     }
   }
 
-  private async assignSlotAutomatically(
-    vehicleType: VehicleType,
-    size: VehicleSize,
-  ) {
-    const slot = await this.prisma.parkingSlot.findFirst({
-      where: {
-        status: 'AVAILABLE',
-        vehicleType,
-        size,
-      },
-    });
 
-    if (!slot) return null;
-
-    await this.prisma.parkingSlot.update({
-      where: { id: slot.id },
-      data: { status: 'UNAVAILABLE' },
-    });
-
-    return slot;
-  }
 
   async validateReservationStatus(
     id: string,
@@ -270,49 +285,5 @@ export class ReservationsService {
     return true;
   }
 
-  async assignSlot(reservationId: string, slotId: string) {
-    await this.validateReservationStatus(reservationId, ['PENDING']);
 
-    const slot = await this.prisma.parkingSlot.findUnique({
-      where: { id: slotId },
-      select: { status: true, vehicleType: true, size: true },
-    });
-
-    if (!slot) {
-      throw new NotFoundException('Slot not found');
-    }
-
-    if (slot.status !== 'AVAILABLE') {
-      throw new BadRequestException('Slot is not available');
-    }
-
-    const reservation = await this.prisma.reservation.findUnique({
-      where: { id: reservationId },
-      include: { vehicle: true },
-    });
-
-    if (
-      !reservation ||
-      slot.vehicleType !== reservation.vehicle.vehicleType ||
-      slot.size !== reservation.vehicle.size
-    ) {
-      throw new BadRequestException('Slot does not match vehicle requirements');
-    }
-
-    // Update both records in a transaction
-    return this.prisma.$transaction([
-      this.prisma.parkingSlot.update({
-        where: { id: slotId },
-        data: { status: 'UNAVAILABLE' },
-      }),
-      this.prisma.reservation.update({
-        where: { id: reservationId },
-        data: {
-          slotId,
-          status: 'APPROVED',
-          expiration: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-        },
-      }),
-    ]);
-  }
 }

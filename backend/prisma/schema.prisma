@@ -46,6 +46,7 @@ enum VehicleSize {
 enum SlotStatus {
   AVAILABLE
   UNAVAILABLE
+  MAINTENANCE  // New: for slots under repair/reserved
 
   @@map("slot_status")
 }
@@ -54,6 +55,9 @@ enum ReservationStatus {
   PENDING
   APPROVED
   REJECTED
+  CANCELLED    // New: driver cancelled
+  EXPIRED      // New: no-show after expiration time
+  COMPLETED    // New: converted to active session
 
   @@map("reservation_status")
 }
@@ -65,6 +69,30 @@ enum ParkingLocation {
   WEST
 
   @@map("parking_location")
+}
+
+enum PaymentStatus {
+  PAID
+  PENDING
+  FAILED       // New: payment failed
+  REFUNDED     // New: refund issued
+
+  @@map("payment_status")
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
+  MOBILE
+}
+
+enum SessionStatus {
+  ACTIVE     // Currently parked
+  COMPLETED  // Exited and paid
+  CANCELLED  // Cancelled before entry
+  OVERDUE    // Exceeded paid time (for pre-paid)
+
+  @@map("session_status")
 }
 
 model User {
@@ -88,10 +116,11 @@ model User {
 
   companyId String?
 
-  reservations Reservation[]
-  logs         Log[]
-  createdAt    DateTime      @default(now()) @map("created_at")
-  updatedAt    DateTime      @updatedAt @map("updated_at")
+  reservations     ParkingSession[]
+  logs             Log[]
+  reservationBookings Reservation[]  // Renamed from reservations to avoid confusion
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -105,6 +134,7 @@ model Vehicle {
   attributes   Json? // For storing additional details like color, model, etc.
   user         User          @relation(fields: [userId], references: [id])
   reservations Reservation[]
+  sessions     ParkingSession[]
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
@@ -118,7 +148,9 @@ model ParkingSlot {
   vehicleType  VehicleType     @map("vehicle_type")
   location     ParkingLocation
   status       SlotStatus      @default(AVAILABLE)
+  hourlyRate   Float           @default(2.50) @map("hourly_rate") // New: rate per hour
   reservations Reservation[]
+  sessions     ParkingSession[]
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
 
@@ -129,17 +161,92 @@ model Reservation {
   id          String            @id @default(uuid())
   userId      String            @map("user_id")
   vehicleId   Int               @map("vehicle_id")
-  slotId      String?           @map("slot_id")
-  slotNumber  String?           @map("slot_number")
+  slotId      String            @map("slot_id")
   status      ReservationStatus @default(PENDING)
+  
+  // Time fields
+  startTime   DateTime          @map("start_time")  // When they plan to arrive
+  endTime     DateTime          @map("end_time")    // When they plan to leave
+  expiration  DateTime?         // When reservation expires if not claimed (usually startTime + 30 min)
+  
+  // Relations
   user        User              @relation(fields: [userId], references: [id])
   vehicle     Vehicle           @relation(fields: [vehicleId], references: [id])
-  parkingSlot ParkingSlot?      @relation(fields: [slotId], references: [id])
+  parkingSlot ParkingSlot       @relation(fields: [slotId], references: [id])
+  session     ParkingSession?   // Optional: if reservation converted to session
+  
+  // Metadata
+  notes       String?           // Special requests
+  cancelledAt DateTime?         @map("cancelled_at")
   createdAt   DateTime          @default(now()) @map("created_at")
   updatedAt   DateTime          @updatedAt @map("updated_at")
-  expiration  DateTime?
 
+  @@index([userId])
+  @@index([slotId])
+  @@index([status])
+  @@index([startTime])
   @@map("reservations")
+}
+
+model ParkingSession {
+  id              String        @id @default(uuid())
+  sessionNumber   String        @unique @map("session_number") // Human-readable: "S-20240409-001"
+  
+  // Relations
+  userId          String        @map("user_id")
+  vehicleId       Int           @map("vehicle_id")
+  slotId          String        @map("slot_id")
+  reservationId   String?       @map("reservation_id") @unique
+  
+  // Time tracking
+  entryTime       DateTime      @default(now()) @map("entry_time")
+  exitTime        DateTime?     @map("exit_time")
+  
+  // Payment
+  paymentStatus   PaymentStatus @default(PENDING)
+  paymentMethod   PaymentMethod?
+  totalFee        Float?        // Calculated when exiting
+  
+  // Session tracking
+  status          SessionStatus @default(ACTIVE)
+  
+  // Optional: pre-paid time for advanced bookings
+  prepaidHours    Int?          @default(0) @map("prepaid_hours")
+  
+  // Relations
+  user            User          @relation(fields: [userId], references: [id])
+  vehicle         Vehicle       @relation(fields: [vehicleId], references: [id])
+  parkingSlot     ParkingSlot   @relation(fields: [slotId], references: [id])
+  reservation     Reservation?  @relation(fields: [reservationId], references: [id])
+  
+  // Metadata
+  notes           String?       // Damage reports, special handling
+  checkedInBy     String?       @map("checked_in_by") // Clerk ID if manually checked in
+  checkedOutBy    String?       @map("checked_out_by") // Clerk ID if manually checked out
+  
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([slotId])
+  @@index([status])
+  @@index([entryTime])
+  @@index([sessionNumber])
+  @@map("parking_sessions")
+}
+model RateConfig {
+  id            String        @id @default(uuid())
+  location      ParkingLocation?
+  vehicleType   VehicleType?
+  vehicleSize   VehicleSize?
+  hourlyRate    Float
+  effectiveFrom DateTime      @map("effective_from")
+  effectiveTo   DateTime?     @map("effective_to")
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  @@map("rate_configs")
 }
 
 model Log {
@@ -167,13 +274,4 @@ model File {
   @@map("files")
 }
 
-enum PaymentStatus {
-  PAID
-  PENDING
-}
 
-enum PaymentMethod {
-  CARD
-  CASH
-  MOBILE
-}

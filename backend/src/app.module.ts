@@ -8,7 +8,6 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { MailModule } from './mail/mail.module';
-import { TicketsModule } from './modules/tickets/tickets.module';
 import { VehiclesModule } from './modules/vehicles/vehicles.module';
 import appConfig from './config/app.config';
 import { ReservationsModule } from './modules/reservations/reservations.module';
@@ -37,7 +36,6 @@ import { ParkingSessionController } from './modules/parking-session/parking-sess
     ParkingSlotsModule,
     ReservationsModule,
     VehiclesModule,
-    TicketsModule,
     ParkingSessionModule,
   ],
 

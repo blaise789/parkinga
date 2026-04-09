@@ -6,7 +6,7 @@ import {
   VehicleSize,
   VehicleType,
 } from '@prisma/client';
-import { IsEnum, IsString } from 'class-validator';
+import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateParkingSlotDto {
   @ApiProperty({
@@ -51,4 +51,13 @@ export class CreateParkingSlotDto {
     required: true,
   })
   status: SlotStatus;
+
+  @ApiProperty({
+    description: 'Hourly rate for the parking slot',
+    example: 2.50,
+    required: false,
+  })
+  @IsNumber()
+  @IsOptional()
+  hourlyRate?: number;
 }

@@ -137,36 +137,7 @@ export class ReservationsController {
     return this.reservationsService.rejectReservation(id, reason);
   }
 
-  @Post(':id/assign-slot/:slotId')
-  @ApiOperation({
-    summary: 'Manually assign slot to reservation',
-    description: 'Assigns a specific parking slot to a pending reservation',
-  })
-  @ApiParam({
-    name: 'id',
-    description: 'Reservation ID to assign slot to',
-    type: String,
-  })
-  @ApiParam({
-    name: 'slotId',
-    description: 'Parking slot ID to assign',
-    type: String,
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Slot assigned successfully',
-  })
-  @ApiResponse({
-    status: 400,
-    description: 'Invalid slot or reservation status',
-  })
-  @ApiResponse({ status: 404, description: 'Reservation or slot not found' })
-  async assignSlot(
-    @Param('id') reservationId: string,
-    @Param('slotId') slotId: string,
-  ) {
-    return this.reservationsService.assignSlot(reservationId, slotId);
-  }
+
 
   @Get('user/me')
   @ApiOperation({

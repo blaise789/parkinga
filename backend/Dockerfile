@@ -32,7 +32,7 @@ COPY --from=builder --chown=nodejs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
 COPY --from=builder --chown=nodejs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
-RUN mkdir -p uploads logs && \
+RUN mkdir -p uploads/profiles logs && \
     chown -R nodejs:nodejs uploads logs
 
 USER nodejs

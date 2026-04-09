@@ -141,7 +141,8 @@ jobs:
             echo "$ENV_FILE" > .env
 
             # Start containers
-            mkdir -p nginx
+            mkdir -p nginx uploads/profiles
+            sudo chown -R 1001:1001 uploads
             docker compose down --remove-orphans 2>/dev/null || true
             docker compose up --build -d
 

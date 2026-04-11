@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy, INestApplication } from '@ne
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
-
+import { hash } from 'bcrypt';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
@@ -13,6 +13,23 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
 
   async onModuleInit() {
     await this.$connect();
+    
+    // Seed default admin
+    const adminEmail = 'bigirabagaboblaise@gmail.com';
+    const existingAdmin = await this.user.findUnique({ where: { email: adminEmail } });
+    if (!existingAdmin) {
+      const password = await hash('Blaise@123', 10);
+      await this.user.create({
+        data: {
+          email: adminEmail,
+          firstName: 'blaise',
+          lastName: 'bigirabagabo',
+          password,
+          role: 'ADMIN',
+        },
+      });
+      console.log('✅ Default ADMIN user seeded.');
+    }
   }
   async enableShutdownHooks(app: INestApplication) {
     this.$on('beforeExit' as never, async () => {

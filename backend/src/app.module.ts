@@ -39,7 +39,7 @@ import { ParkingSessionController } from './modules/parking-session/parking-sess
     ParkingSessionModule,
   ],
 
-  controllers: [ParkingSessionController],
+  controllers: [],
   providers: [],
 })
 export class AppModule {}

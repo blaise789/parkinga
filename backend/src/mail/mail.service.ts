@@ -47,12 +47,7 @@ export class MailService {
   }
   private transporter: nodemailer.Transporter;
   constructor(private configService: ConfigService) {
-    console.log(this.configService.get('MAIL_HOST'));
-    console.log(this.configService.get('MAIL_PORT'));
-    console.log(this.configService.get('MAIL_PASSWORD'));
-    console.log(this.configService.get('MAIL_USER'));
-    console.log(this.configService.get('JWT_SECRET_KEY'));
-    console.log(this.configService.get('JWT_EXPIRES_IN'));
+
     this.transporter = nodemailer.createTransport({
       host: this.configService.get('MAIL_HOST'),
       port: this.configService.get('MAIL_PORT'),

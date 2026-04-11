@@ -32,9 +32,8 @@ export class CreateUserDTO {
   @ApiProperty()
   readonly email: string;
 
-  // @IsEnum(Role, { message: "User must be either user or admin" })
-  // @IsNotEmpty({ message: "Role is required" })
-  @ApiProperty()
+  @IsEnum(Role, { message: 'Role must be ADMIN, DRIVER, or CLERK' })
+  @ApiProperty({ enum: Role, required: false })
   @IsOptional()
   readonly role: Role;
 
